@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
     <div class="table-wrapper">
-      <v-data-table :headers="headers" :items="filteredUsers" class="elevation-1" item-value="id" :items-per-page="-1"
+      <v-data-table :headers="headers" :items="displayItems" class="elevation-1" item-value="id" :items-per-page="-1"
         hide-default-footer>
         <template #item.action="{ item }">
 
@@ -30,6 +30,10 @@
             </v-tooltip>
           </div>
         </template>
+
+        <template #item.role="{ item }">
+          <span>{{ item.roleNames?.join(', ') || item.role || '' }}</span>
+        </template>
       </v-data-table>
     </div>
 
@@ -56,18 +60,23 @@ import EditIcon from '@/assets/icons-vue/edit.vue'
 import ViewIcon from '@/assets/icons-vue/receipt.vue'
 import DeleteIcon from '@/assets/icons-vue/trash.vue'
 import { useUser } from '@/data/user'
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 
 const userStore = useUser()
 // Use storeToRefs to maintain reactivity when destructuring
 const { filteredUsers } = storeToRefs(userStore)
 
-// Data will be loaded by parent component (Users.vue)
+const props = defineProps({
+  filteredItems: Array
+})
+
+// Use filtered items from parent if provided, otherwise use store's filtered users
+const displayItems = computed(() => props.filteredItems || filteredUsers.value)
 
 // Debug: Watch for changes in filteredUsers
-watch(filteredUsers, (newUsers, oldUsers) => {
-  console.log('[UserTable] filteredUsers changed from', oldUsers?.length, 'to', newUsers?.length)
+watch(displayItems, (newUsers, oldUsers) => {
+  console.log('[UserTable] displayItems changed from', oldUsers?.length, 'to', newUsers?.length)
 }, { immediate: true })
 
 const emit = defineEmits(['view-user', 'edit-user', 'delete-user'])

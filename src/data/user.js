@@ -49,7 +49,9 @@ export const useUser = defineStore('user', () => {
         username: u.username,
         dob: u.dob,
         phone: u.phone,
-        role: u.roles?.[0]?.name ?? '',
+        roles: u.roles || [],
+        roleNames: u.roles?.map(r => r.name) || [],
+        role: u.roles?.[0]?.name ?? '', // Keep for backward compatibility
         password: u.password ?? '',
         debtAmount: u.debtAmount,
         _raw: u
@@ -136,6 +138,37 @@ export const useUser = defineStore('user', () => {
     }
   }
 
+  /**
+   * fetchCurrentUser: Gọi API GET /users/myinfo để lấy thông tin user đang đăng nhập
+   */
+  async function fetchCurrentUser() {
+    try {
+      console.log('[UserStore] fetchCurrentUser called')
+      const resp = await api.get('/users/myinfo')
+      const userData = resp.data.result || resp.data
+
+      currentUser.value = {
+        id: userData.id,
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        name: `${userData.firstName ?? ''} ${userData.lastName ?? ''}`.trim(),
+        email: userData.email ?? '',
+        username: userData.username,
+        dob: userData.dob,
+        phone: userData.phone,
+        roles: userData.roles || [],
+        roleNames: userData.roles?.map(r => r.name) || [],
+        role: userData.roles?.[0]?.name ?? '',
+        debtAmount: userData.debtAmount,
+        _raw: userData
+      }
+      console.log('[UserStore] Current user loaded:', currentUser.value)
+    } catch (e) {
+      console.error('[UserStore] fetchCurrentUser failed:', e.response?.data || e.message)
+      currentUser.value = null
+      throw e
+    }
+  }
 
   return {
     users,
@@ -145,6 +178,7 @@ export const useUser = defineStore('user', () => {
     error,
     currentUser,
     fetchUsers,
+    fetchCurrentUser,
     addUser,
     updateUserAPI,
     deleteUserAPI

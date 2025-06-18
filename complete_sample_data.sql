@@ -1,53 +1,5 @@
--- ============================================================================
--- COMPLETE SAMPLE DATA FOR BOOKSTORE APPLICATION
--- Execute this after Spring Boot has created all tables with JPA
--- ============================================================================
-
--- Clear existing data (in correct order due to foreign keys)
-DELETE FROM users_roles;
-
-DELETE FROM roles_permissions;
-
-DELETE FROM books_categories;
-
-DELETE FROM authors_books;
-
-DELETE FROM books_import_receipts;
-
-DELETE FROM books_invoices;
-
-DELETE FROM payment_receipts_invoices;
-
-DELETE FROM monthly_inventory_report_details;
-
-DELETE FROM monthly_debt_report_details;
-
-DELETE FROM payment_receipts;
-
-DELETE FROM invoices;
-
-DELETE FROM import_receipts;
-
-DELETE FROM monthly_inventory_reports;
-
-DELETE FROM monthly_debt_reports;
-
-DELETE FROM books;
-
-DELETE FROM categories;
-
-DELETE FROM authors;
-
-DELETE FROM users;
-
-DELETE FROM roles;
-
-DELETE FROM permissions;
-
-DELETE FROM parameters;
-
-DELETE FROM invalidated_token;
-
+-- cd backend --
+-- ./mvnw spring-boot:run --
 -- ============================================================================
 -- 1. PERMISSIONS (13 permissions)
 -- ============================================================================
@@ -172,7 +124,7 @@ INSERT INTO
         debt_amount_user
     )
 VALUES
-    -- Admin user (ID: admin-001)
+    -- Admin user (ID: admin-000)
     (
         'admin-000',
         'admin123',
@@ -184,107 +136,118 @@ VALUES
         '1990-01-01',
         0.00
     ),
-
--- Regular users (ID: user-001 to user-009)
-(
-    'user-001',
-    'john_doe',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'John',
-    'Doe',
-    'john.doe@email.com',
-    '0901234568',
-    '1985-03-15',
-    150000.00
-),
-(
-    'user-002',
-    'jane_smith',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Jane',
-    'Smith',
-    'jane.smith@email.com',
-    '0901234569',
-    '1992-07-22',
-    75000.00
-),
-(
-    'user-003',
-    'mike_johnson',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Mike',
-    'Johnson',
-    'mike.johnson@email.com',
-    '0901234570',
-    '1988-11-10',
-    0.00
-),
-(
-    'user-004',
-    'sarah_wilson',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Sarah',
-    'Wilson',
-    'sarah.wilson@email.com',
-    '0901234571',
-    '1995-04-18',
-    200000.00
-),
-(
-    'user-005',
-    'david_brown',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'David',
-    'Brown',
-    'david.brown@email.com',
-    '0901234572',
-    '1987-09-03',
-    50000.00
-),
-(
-    'user-006',
-    'emily_davis',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Emily',
-    'Davis',
-    'emily.davis@email.com',
-    '0901234573',
-    '1993-12-25',
-    0.00
-),
-(
-    'user-007',
-    'alex_garcia',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Alex',
-    'Garcia',
-    'alex.garcia@email.com',
-    '0901234574',
-    '1991-06-14',
-    100000.00
-),
-(
-    'user-008',
-    'lisa_martinez',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Lisa',
-    'Martinez',
-    'lisa.martinez@email.com',
-    '0901234575',
-    '1989-08-07',
-    25000.00
-),
-(
-    'user-009',
-    'chris_lee',
-    '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
-    'Chris',
-    'Lee',
-    'chris.lee@email.com',
-    '0901234576',
-    '1994-02-28',
-    175000.00
-);
+    -- Admin user (ID: admin-001)
+    (
+        'admin',
+        'admin',
+        '$10$H9LSTLTInv9Ydetf6Wjf1.hInmxD2m57exCLcoL48aonpdV5qJ8sq',
+        'System',
+        'Administrator2',
+        'admin2@bookstore.com',
+        '0901222567',
+        '1990-01-02',
+        0.00
+    ),
+    -- Regular users (ID: user-001 to user-009)
+    (
+        'user-001',
+        'john_doe',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'John',
+        'Doe',
+        'john.doe@email.com',
+        '0901234568',
+        '1985-03-15',
+        150000.00
+    ),
+    (
+        'user-002',
+        'jane_smith',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Jane',
+        'Smith',
+        'jane.smith@email.com',
+        '0901234569',
+        '1992-07-22',
+        75000.00
+    ),
+    (
+        'user-003',
+        'mike_johnson',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Mike',
+        'Johnson',
+        'mike.johnson@email.com',
+        '0901234570',
+        '1988-11-10',
+        0.00
+    ),
+    (
+        'user-004',
+        'sarah_wilson',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Sarah',
+        'Wilson',
+        'sarah.wilson@email.com',
+        '0901234571',
+        '1995-04-18',
+        200000.00
+    ),
+    (
+        'user-005',
+        'david_brown',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'David',
+        'Brown',
+        'david.brown@email.com',
+        '0901234572',
+        '1987-09-03',
+        50000.00
+    ),
+    (
+        'user-006',
+        'emily_davis',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Emily',
+        'Davis',
+        'emily.davis@email.com',
+        '0901234573',
+        '1993-12-25',
+        0.00
+    ),
+    (
+        'user-007',
+        'alex_garcia',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Alex',
+        'Garcia',
+        'alex.garcia@email.com',
+        '0901234574',
+        '1991-06-14',
+        100000.00
+    ),
+    (
+        'user-008',
+        'lisa_martinez',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Lisa',
+        'Martinez',
+        'lisa.martinez@email.com',
+        '0901234575',
+        '1989-08-07',
+        25000.00
+    ),
+    (
+        'user-009',
+        'chris_lee',
+        '$2a$10$mfMZmgDH5qBqvwSTRLGQaeMZRWvvRrAzaAEy35uUgPG3JCtHmWzLm',
+        'Chris',
+        'Lee',
+        'chris.lee@email.com',
+        '0901234576',
+        '1994-02-28',
+        175000.00
+    );
 
 -- ============================================================================
 -- 5. USERS_ROLES (Many-to-Many relationship)

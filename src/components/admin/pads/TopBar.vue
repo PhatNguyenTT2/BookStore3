@@ -1,5 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useUser } from '@/data/user'
+import { storeToRefs } from 'pinia'
 import BigUserIcon from '@/assets/icons-vue/big-user.vue'
 import BigSettingIcon from '@/assets/icons-vue/big-setting.vue'
 import NameText from '@/components/admin/texts/NameText.vue'
@@ -8,8 +10,20 @@ import TimeText from '@/components/admin/texts/TimeText.vue'
 import DayText from '@/components/admin/texts/DayText.vue'
 import LineTopBar from '@/components/admin/lines/LineTopBar.vue'
 
+const userStore = useUser()
+const { currentUser } = storeToRefs(userStore)
+
 const currentTime = ref('')
 const currentDay = ref('')
+
+// Computed properties for user information
+const userName = computed(() => {
+  return currentUser.value?.name || 'Loading...'
+})
+
+const userRole = computed(() => {
+  return currentUser.value?.role || 'Loading...'
+})
 
 // Function to update time and date
 const updateDateTime = () => {
@@ -28,9 +42,16 @@ const updateDateTime = () => {
 }
 
 // Update time every second
-onMounted(() => {
+onMounted(async () => {
   updateDateTime()
   setInterval(updateDateTime, 1000)  // Update every second
+  
+  // Fetch current user information
+  try {
+    await userStore.fetchCurrentUser()
+  } catch (e) {
+    console.error('Failed to load current user info:', e)
+  }
 })
 </script>
 
@@ -41,10 +62,10 @@ onMounted(() => {
     </div>
     <div class="left-group">
       <div class="name">
-        <NameText><template #text>Nisan Gunasekara</template></NameText>
+        <NameText><template #text>{{ userName }}</template></NameText>
       </div>
       <div class="role">
-        <RoleText><template #text>Admin</template></RoleText>
+        <RoleText><template #text>{{ userRole }}</template></RoleText>
       </div>
     </div>
     <div class="right-section">
