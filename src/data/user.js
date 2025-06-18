@@ -31,6 +31,7 @@ export const useUser = defineStore('user', () => {
     loading.value = true
     error.value = null
     try {
+      console.log('[UserStore] fetchUsers called')
       const resp = await api.get('/users')
       const list = Array.isArray(resp.data)
         ? resp.data
@@ -38,6 +39,7 @@ export const useUser = defineStore('user', () => {
           ? resp.data.result
           : []
 
+      console.log('[UserStore] Received', list.length, 'users from API')
       users.value = list.map(u => ({
         id: u.id,
         firstName: u.firstName,
@@ -52,6 +54,7 @@ export const useUser = defineStore('user', () => {
         debtAmount: u.debtAmount,
         _raw: u
       }))
+      console.log('[UserStore] Updated users.value to', users.value.length, 'users')
     } catch (e) {
       console.error('[UserStore] fetchUsers failed:',
         e.response?.status,
@@ -83,7 +86,7 @@ export const useUser = defineStore('user', () => {
     if (idx !== -1) users.value[idx] = { ...updated }
   }
 
-   async function updateUserAPI(userId, payload) {
+  async function updateUserAPI(userId, payload) {
     // Normalize payload.dob nếu là Date
     if (payload.dob instanceof Date) {
       const y = payload.dob.getFullYear()
@@ -106,12 +109,27 @@ export const useUser = defineStore('user', () => {
   async function deleteUserAPI(userId) {
     loading.value = true; error.value = null
     try {
+      console.log('[UserStore] Starting delete for user:', userId)
+      console.log('[UserStore] Users before delete:', users.value.length)
+
       await api.delete(`/users/${userId}`)
-      // sau khi xoá thành công, reload lại
+      console.log('[UserStore] Delete API call successful')
+
+      // Optimistic update - remove user from local array immediately
+      const userIndex = users.value.findIndex(u => u.id === userId)
+      if (userIndex !== -1) {
+        users.value.splice(userIndex, 1)
+        console.log('[UserStore] Removed user from local array. New count:', users.value.length)
+      }
+
+      // Also fetch fresh data as backup
       await fetchUsers()
+      console.log('[UserStore] Users after refetch:', users.value.length)
     } catch (e) {
       console.error('[UserStore] deleteUserAPI failed:', e)
       error.value = e
+      // If API call failed, refetch to ensure data consistency
+      await fetchUsers()
       throw e
     } finally {
       loading.value = false

@@ -1,6 +1,9 @@
 <script setup>
 import { useBook } from '@/data/book'
+import { useCategoryStore } from '@/data/categories'
+import { useAuthorStore } from '@/data/authors'
 import { computed, onMounted, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import ButtonCRUD from '@/components/admin/buttons/ButtonCRUD.vue'
 import AddBook from '@/components/admin/CRUDforms/AddBook.vue'
 import BookDetail from '@/components/admin/CRUDforms/BookDetail.vue'
@@ -11,21 +14,68 @@ import ButtonText from '@/components/admin/texts/ButtonText.vue'
 import TitleText from '@/components/admin/texts/TitleText.vue'
 
 const bookStore = useBook()
+const categoryStore = useCategoryStore()
+const authorStore = useAuthorStore()
+
+// Use storeToRefs to maintain reactivity
+const { items: bookItems, fullBookDetails } = storeToRefs(bookStore)
+
 const searchQuery = ref('')
+const selectedCategories = ref([])
+const selectedAuthors = ref([])
 const addingBook = ref(false)
 const selectedBook = ref(null)
 const editingBook = ref(null)
 
 onMounted(() => {
   bookStore.fetchBooks()
+  categoryStore.fetchCategories()
+  authorStore.fetchAuthors()
 })
 
 const filteredBooks = computed(() => {
+  let filtered = bookItems.value || []
+
+  // Filter by search query
   const q = searchQuery.value.toLowerCase()
-  return bookStore.items.filter(item =>
-    item.id.toLowerCase().includes(q) ||
-    item.title.toLowerCase().includes(q)
-  )
+  if (q) {
+    filtered = filtered.filter(item =>
+      item.id.toLowerCase().includes(q) ||
+      item.title.toLowerCase().includes(q)
+    )
+  }
+
+  // Filter by categories
+  if (selectedCategories.value.length) {
+    filtered = filtered.filter(item => {
+      const bookCategories = fullBookDetails.value[item.id]?.categories || []
+      return selectedCategories.value.some(selectedCategory =>
+        bookCategories.includes(selectedCategory)
+      )
+    })
+  }
+
+  // Filter by authors
+  if (selectedAuthors.value.length) {
+    filtered = filtered.filter(item => {
+      const bookAuthors = fullBookDetails.value[item.id]?.authors || []
+      return selectedAuthors.value.some(selectedAuthor =>
+        bookAuthors.includes(selectedAuthor)
+      )
+    })
+  }
+
+  return filtered
+})
+
+// Category options for multiselect
+const categoryOptions = computed(() => {
+  return categoryStore.categories.map(cat => cat.categoryName)
+})
+
+// Author options for multiselect
+const authorOptions = computed(() => {
+  return authorStore.authors
 })
 
 function handleAddBook() {
@@ -82,11 +132,22 @@ async function updateBook(bookData) {
   }
 }
 
+const bookTable = ref(null)
+
 async function deleteBook(bookId) {
   try {
-    await bookStore.deleteBook(bookId)
+    console.log('[Books.vue] handleDeleteBook called for:', bookId)
+    // Convert string ID to integer if needed
+    const id = typeof bookId === 'string' ? parseInt(bookId) : bookId
+    console.log('[Books.vue] Calling bookStore.deleteBook with ID:', id)
+    await bookStore.deleteBook(id)
+    console.log('[Books.vue] deleteBook completed successfully')
   } catch (e) {
-    console.error('Xoá sách thất bại', e)
+    console.error('Xoá sách thất bại', e.response?.data || e.message)
+    // Show error dialog in BookTable
+    if (bookTable.value) {
+      bookTable.value.showDeleteError()
+    }
   }
 }
 function closeEdit() {
@@ -103,11 +164,26 @@ function closeEdit() {
         <TitleText class="left">
           <template #text>Book Management</template>
         </TitleText>
+        <div class="center">
+          <v-select v-model="selectedCategories" :items="categoryOptions"
+            :label="selectedCategories.length ? `${selectedCategories.length} categories selected` : 'Filter by Categories'"
+            multiple clearable variant="outlined" density="compact" class="category-filter"
+            :loading="categoryStore.loading" hide-details>
+            <template #selection></template>
+          </v-select>
+
+          <v-select v-model="selectedAuthors" :items="authorOptions"
+            :label="selectedAuthors.length ? `${selectedAuthors.length} authors selected` : 'Filter by Authors'"
+            multiple clearable variant="outlined" density="compact" class="author-filter" :loading="authorStore.loading"
+            hide-details>
+            <template #selection></template>
+          </v-select>
+        </div>
         <SearchFrame v-model="searchQuery" class="right" />
       </div>
 
-      <BookTable :items="filteredBooks" :fullBookDetails="bookStore.fullBookDetails" @view-book="handleViewBook"
-        @edit-book="handleEditBook" @delete-book="deleteBook" />
+      <BookTable ref="bookTable" :filteredItems="filteredBooks" @view-book="handleViewBook" @edit-book="handleEditBook"
+        @delete-book="deleteBook" />
 
       <ButtonCRUD @click="handleAddBook">
         <template #btn-text>
@@ -135,14 +211,71 @@ function closeEdit() {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  gap: 20px;
 }
 
 .left {
-  flex: 1
+  flex: 1;
+}
+
+.center {
+  flex-shrink: 0;
+  display: flex;
+  gap: 12px;
 }
 
 .right {
-  flex-shrink: 0
+  flex-shrink: 0;
+}
+
+.category-filter {
+  width: 220px;
+  font-family: Montserrat;
+  font-size: 14px;
+}
+
+::v-deep(.category-filter .v-field-label) {
+  color: var(--vt-c-second-bg-color) !important;
+  font-weight: 500;
+}
+
+::v-deep(.category-filter .v-field__input) {
+  color: var(--vt-c-second-bg-color) !important;
+  font-family: Montserrat;
+  font-size: 14px;
+}
+
+::v-deep(.category-filter .v-field__outline) {
+  color: var(--vt-c-second-bg-color) !important;
+}
+
+::v-deep(.category-filter .v-icon) {
+  color: var(--vt-c-second-bg-color) !important;
+}
+
+.author-filter {
+  width: 220px;
+  font-family: Montserrat;
+  font-size: 14px;
+}
+
+::v-deep(.author-filter .v-field-label) {
+  color: var(--vt-c-second-bg-color) !important;
+  font-weight: 500;
+}
+
+::v-deep(.author-filter .v-field__input) {
+  color: var(--vt-c-second-bg-color) !important;
+  font-family: Montserrat;
+  font-size: 14px;
+}
+
+::v-deep(.author-filter .v-field__outline) {
+  color: var(--vt-c-second-bg-color) !important;
+}
+
+::v-deep(.author-filter .v-icon) {
+  color: var(--vt-c-second-bg-color) !important;
 }
 
 .book-detail-full {

@@ -1,11 +1,5 @@
 <template>
   <v-container fluid>
-<<<<<<< HEAD
-=======
-    <!-- Search field -->
-    <v-text-field v-model="searchQuery" label="Tìm kiếm người dùng" clearable class="mb-4" />
-
->>>>>>> ebdaaba5fc169175467ce0d43cc22106e9fba0ad
     <div class="table-wrapper">
       <v-data-table :headers="headers" :items="filteredUsers" class="elevation-1" item-value="id" :items-per-page="-1"
         hide-default-footer>
@@ -62,13 +56,19 @@ import EditIcon from '@/assets/icons-vue/edit.vue'
 import ViewIcon from '@/assets/icons-vue/receipt.vue'
 import DeleteIcon from '@/assets/icons-vue/trash.vue'
 import { useUser } from '@/data/user'
-import { ref, onMounted } from 'vue'
+import { ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
 const userStore = useUser()
-const { filteredUsers, searchQuery, fetchUsers } = userStore
+// Use storeToRefs to maintain reactivity when destructuring
+const { filteredUsers } = storeToRefs(userStore)
 
-// load lần đầu
-onMounted(fetchUsers)
+// Data will be loaded by parent component (Users.vue)
+
+// Debug: Watch for changes in filteredUsers
+watch(filteredUsers, (newUsers, oldUsers) => {
+  console.log('[UserTable] filteredUsers changed from', oldUsers?.length, 'to', newUsers?.length)
+}, { immediate: true })
 
 const emit = defineEmits(['view-user', 'edit-user', 'delete-user'])
 
@@ -103,8 +103,10 @@ const headers = [
 /* Wrapper cho scroll */
 .table-wrapper {
 
-  max-height: 66vh;        /* chiều cao tối đa */
-  overflow-y: auto;        /* bật scroll dọc */
+  max-height: 66vh;
+  /* chiều cao tối đa */
+  overflow-y: auto;
+  /* bật scroll dọc */
 
   max-height: 60vh;
   /* chiều cao tối đa */

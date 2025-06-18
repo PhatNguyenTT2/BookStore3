@@ -121,10 +121,29 @@ public class BookService {
                 bookRepository.findById(bookId).orElseThrow(() -> new RuntimeException("Book not found")));
     }
 
+    @Transactional
     public void deleteBook(Integer bookId) {
+        log.info("Attempting to delete book with ID: {}", bookId);
         Books book = bookRepository.findById(bookId).orElse(null);
-        if (book != null) {
+        if (book == null) {
+            log.warn("Book with ID {} not found", bookId);
+            throw new AppException(ErrorCode.BOOK_NOT_EXISTED);
+        }
+
+        try {
+            // Clear many-to-many relationships first to avoid constraint issues
+            book.getAuthors().clear();
+            book.getCategories().clear();
+
+            // Save to persist the relationship clearing
+            bookRepository.save(book);
+
+            // Now delete the book
             bookRepository.delete(book);
+            log.info("Successfully deleted book with ID: {}", bookId);
+        } catch (Exception e) {
+            log.error("Error deleting book with ID {}: {}", bookId, e.getMessage(), e);
+            throw new RuntimeException("Failed to delete book: " + e.getMessage());
         }
     }
 

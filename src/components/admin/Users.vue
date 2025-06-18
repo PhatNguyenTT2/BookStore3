@@ -1,6 +1,7 @@
 <script setup>
 import { useUser } from '@/data/user'
 import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 
 import TitleText from './texts/TitleText.vue'
 import SearchFrame from '@/components/admin/frames/SearchFrame.vue'
@@ -13,7 +14,8 @@ import ButtonCRUD from './buttons/ButtonCRUD.vue'
 import ButtonText from './texts/ButtonText.vue'
 
 const userStore = useUser()
-const searchQuery = ref('')
+// Use storeToRefs to maintain reactivity when destructuring
+const { searchQuery } = storeToRefs(userStore)
 
 const selectedUser = ref(null)
 const editingUser = ref(null)
@@ -61,7 +63,9 @@ async function handleUpdateUser(payload) {
 // DELETE
 async function handleDeleteUser(userId) {
   try {
+    console.log('[Users.vue] handleDeleteUser called for:', userId)
     await userStore.deleteUserAPI(userId)
+    console.log('[Users.vue] deleteUserAPI completed successfully')
   } catch (e) {
     console.error('Xoá user thất bại', e.response?.data || e.message)
   }
@@ -82,8 +86,7 @@ async function handleDeleteUser(userId) {
         <SearchFrame v-model="searchQuery" class="right" />
       </div>
 
-      <UserTable :search="searchQuery" @view-user="handleViewUser" @edit-user="handleEditUser"
-        @delete-user="handleDeleteUser" />
+      <UserTable @view-user="handleViewUser" @edit-user="handleEditUser" @delete-user="handleDeleteUser" />
 
       <ButtonCRUD @click="handleAddUser">
         <template #btn-text>
